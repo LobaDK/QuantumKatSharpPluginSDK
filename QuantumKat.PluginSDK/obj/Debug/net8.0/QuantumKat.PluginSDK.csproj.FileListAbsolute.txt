@@ -1,0 +1,12 @@
+/home/lobadk/Documents/QuantumKatSharpPluginSDK/QuantumKat.PluginSDK/bin/Debug/net8.0/QuantumKat.PluginSDK.deps.json
+/home/lobadk/Documents/QuantumKatSharpPluginSDK/QuantumKat.PluginSDK/bin/Debug/net8.0/QuantumKat.PluginSDK.dll
+/home/lobadk/Documents/QuantumKatSharpPluginSDK/QuantumKat.PluginSDK/bin/Debug/net8.0/QuantumKat.PluginSDK.pdb
+/home/lobadk/Documents/QuantumKatSharpPluginSDK/QuantumKat.PluginSDK/obj/Debug/net8.0/QuantumKat.PluginSDK.csproj.AssemblyReference.cache
+/home/lobadk/Documents/QuantumKatSharpPluginSDK/QuantumKat.PluginSDK/obj/Debug/net8.0/QuantumKat.PluginSDK.GeneratedMSBuildEditorConfig.editorconfig
+/home/lobadk/Documents/QuantumKatSharpPluginSDK/QuantumKat.PluginSDK/obj/Debug/net8.0/QuantumKat.PluginSDK.AssemblyInfoInputs.cache
+/home/lobadk/Documents/QuantumKatSharpPluginSDK/QuantumKat.PluginSDK/obj/Debug/net8.0/QuantumKat.PluginSDK.AssemblyInfo.cs
+/home/lobadk/Documents/QuantumKatSharpPluginSDK/QuantumKat.PluginSDK/obj/Debug/net8.0/QuantumKat.PluginSDK.csproj.CoreCompileInputs.cache
+/home/lobadk/Documents/QuantumKatSharpPluginSDK/QuantumKat.PluginSDK/obj/Debug/net8.0/QuantumKat.PluginSDK.dll
+/home/lobadk/Documents/QuantumKatSharpPluginSDK/QuantumKat.PluginSDK/obj/Debug/net8.0/refint/QuantumKat.PluginSDK.dll
+/home/lobadk/Documents/QuantumKatSharpPluginSDK/QuantumKat.PluginSDK/obj/Debug/net8.0/QuantumKat.PluginSDK.pdb
+/home/lobadk/Documents/QuantumKatSharpPluginSDK/QuantumKat.PluginSDK/obj/Debug/net8.0/ref/QuantumKat.PluginSDK.dll
