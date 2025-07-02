@@ -1,8 +1,7 @@
-namespace QuantumKat.PluginSDK;
+namespace QuantumKat.PluginSDK.Core.Interfaces;
 
-public interface IThreaded
+public interface IThreadedPlugin : IPlugin
 {
     Task StartAsync(CancellationToken cancellationToken);
     Task StopAsync(CancellationToken cancellationToken);
-    bool IsRunning { get; }
 }

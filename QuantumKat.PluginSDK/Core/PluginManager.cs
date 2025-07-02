@@ -49,7 +49,7 @@ public class PluginManager(IServiceCollection services, IConfiguration configura
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Failed to load plugin: {pluginDll}");
+                _logger.LogError(ex, "Failed to load plugin: {pluginDll}", pluginDll);
             }
         }
     }
@@ -64,17 +64,62 @@ public class PluginManager(IServiceCollection services, IConfiguration configura
 
     public async Task StartAllPluginsAsync(CancellationToken cancellationToken)
     {
-        foreach (var (plugin, _) in _loadedPlugins)
+        List<IThreadedPlugin> threadedPlugins = [.. _loadedPlugins
+            .Select(lp => lp.plugin)
+            .OfType<IThreadedPlugin>()];
+
+        if (threadedPlugins.Count == 0)
         {
-            try
-            {
-                await plugin.StartAsync(cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Plugin '{plugin.Name}' failed to start.");
-            }
+            _logger.LogInformation("No threaded plugins to start...");
+            return;
         }
+
+        var tasks = new List<Task>();
+        foreach (IThreadedPlugin threadedPlugin in threadedPlugins)
+        {
+            tasks.Add(Task.Run(async () =>
+            {
+                try
+                {
+                    await threadedPlugin.StartAsync(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Plugin '{plugin.Name}' failed to start.", threadedPlugin.Name);
+                }
+            }, cancellationToken));
+        }
+        await Task.WhenAll(tasks);
+    }
+
+    public async Task StopAllPluginsAsync(CancellationToken cancellationToken)
+    {
+        List<IThreadedPlugin> threadedPlugins = [.. _loadedPlugins
+            .Select(lp => lp.plugin)
+            .OfType<IThreadedPlugin>()];
+
+        if (threadedPlugins.Count == 0)
+        {
+            _logger.LogInformation("No threaded plugins to stop...");
+            return;
+        }
+
+        var tasks = new List<Task>();
+        foreach (IThreadedPlugin threadedPlugin in threadedPlugins)
+        {
+            tasks.Add(Task.Run(async () =>
+            {
+                try
+                {
+                    await threadedPlugin.StopAsync(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Plugin '{plugin.Name}' failed to stop.", threadedPlugin.Name);
+                }
+            }, cancellationToken));
+        }
+        await Task.WhenAll(tasks);
     }
 
     public async Task DispatchMessageAsync(SocketMessage message)

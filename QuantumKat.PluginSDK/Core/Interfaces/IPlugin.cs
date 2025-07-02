@@ -10,5 +10,4 @@ public interface IPlugin
     string Author { get; }
     void Initialize(PluginBootstrapContext context);
     void RegisterServices(IServiceCollection services);
-    Task StartAsync(CancellationToken cancellationToken);
 }
