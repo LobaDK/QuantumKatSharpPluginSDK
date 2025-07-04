@@ -31,8 +31,7 @@ public interface IPlugin
     /// Gets the dependencies of the plugin, where the key is the plugin name and the value is a list of required plugins.
     /// </summary>
     /// <remarks>
-    /// <c>&lt;</c> and <c>&gt;</c> may be used to indicate the minimum and maximum supported plugin version, respectivelly.
-    /// Additionally, <c>=</c> can be used to specify the exact version.
+    /// <c>&lt;</c>, <c>&gt;</c> and <c>=</c> may be used like standard C# comparison operators to specify version requirements.
     /// </remarks>
     Dictionary<string, List<string>> PluginDependencies { get; }
 
