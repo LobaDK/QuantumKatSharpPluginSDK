@@ -57,13 +57,23 @@ public class PluginManager
     /// </list>
     /// If any step fails, the error is logged and the method continues with the next plugin.
     /// </remarks>
+    /// <summary>
+    /// Validates the plugin path.
+    /// </summary>
+    /// <param name="pluginPath">The plugin assembly file path to validate.</param>
+    /// <returns>True if the path is not null, not empty, and the file exists; otherwise, false.</returns>
+    private static bool IsValidPluginPath(string pluginPath)
+    {
+        return !string.IsNullOrWhiteSpace(pluginPath) && File.Exists(pluginPath);
+    }
+
     public void LoadPlugins(IEnumerable<string> pluginPaths)
     {
         var discovered = new List<PluginMetadata>();
 
         foreach (var pluginDll in pluginPaths)
         {
-            if (string.IsNullOrWhiteSpace(pluginDll) || !File.Exists(pluginDll))
+            if (!IsValidPluginPath(pluginDll))
             {
                 _logger.LogWarning("Plugin path is null, empty, or does not exist: {pluginPath}", pluginDll);
                 continue;
