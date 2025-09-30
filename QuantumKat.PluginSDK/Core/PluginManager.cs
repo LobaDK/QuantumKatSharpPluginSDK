@@ -9,14 +9,26 @@ namespace QuantumKat.PluginSDK.Core;
 /// <summary>
 /// Manages the loading, initialization, and lifecycle of plugins.
 /// </summary>
-public class PluginManager(IServiceCollection services, IConfiguration configuration, ILogger logger, IServiceProvider coreServices)
+public class PluginManager
 {
     private readonly List<(IPlugin plugin, PluginLoadContext context)> _loadedPlugins = [];
-    private readonly IServiceCollection _serviceCollection = services;
-    private readonly IConfiguration _configuration = configuration;
-    private readonly ILogger _logger = logger;
-    private readonly IServiceProvider _coreServices = coreServices;
+    private readonly IConfiguration _configuration;
+    private readonly ILogger _logger;
+    private readonly IPluginServiceProvider _sharedServiceProvider;
     private readonly PluginEventRegistry _eventRegistry = new();
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PluginManager"/> class.
+    /// </summary>
+    /// <param name="sharedServiceProvider">The shared service provider for managing services across the application and plugins.</param>
+    /// <param name="configuration">The configuration settings.</param>
+    /// <param name="logger">The logger instance.</param>
+    public PluginManager(IPluginServiceProvider sharedServiceProvider, IConfiguration configuration, ILogger logger)
+    {
+        _sharedServiceProvider = sharedServiceProvider ?? throw new ArgumentNullException(nameof(sharedServiceProvider));
+        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
 
     private class PluginMetadata
     {
@@ -152,9 +164,10 @@ public class PluginManager(IServiceCollection services, IConfiguration configura
                 {
                     Configuration = _configuration,
                     Logger = _logger,
-                    CoreServices = _coreServices,
+                    CoreServices = _sharedServiceProvider.ServiceProvider,
                     PluginDirectory = Path.GetDirectoryName(meta.Path) ?? string.Empty,
-                    EventRegistry = _eventRegistry
+                    EventRegistry = _eventRegistry,
+                    SharedServiceProvider = _sharedServiceProvider
                 };
                 pluginInstance.Initialize(bootstrapContext);
                 _loadedPlugins.Add((pluginInstance, meta.LoadContext));
@@ -201,16 +214,20 @@ public class PluginManager(IServiceCollection services, IConfiguration configura
     }
 
     /// <summary>
-    /// Registers all services provided by the loaded plugins into the service collection.
+    /// Registers all services provided by the loaded plugins into the shared service provider.
     /// Iterates through each loaded plugin and invokes its <c>RegisterServices</c> method,
     /// allowing the plugin to add its services to the application's dependency injection container.
+    /// After all services are registered, the service provider is rebuilt to ensure consistency.
     /// </summary>
     public void RegisterAllPluginServices()
     {
-        foreach (var (plugin, _) in _loadedPlugins)
+        _sharedServiceProvider.RegisterServicesAndRebuild(services =>
         {
-            plugin.RegisterServices(_serviceCollection);
-        }
+            foreach (var (plugin, _) in _loadedPlugins)
+            {
+                plugin.RegisterServices(services);
+            }
+        });
     }
 
     /// <summary>
