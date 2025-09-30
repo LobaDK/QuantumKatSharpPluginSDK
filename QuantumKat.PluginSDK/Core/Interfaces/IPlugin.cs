@@ -28,6 +28,14 @@ public interface IPlugin
     string Author { get; }
 
     /// <summary>
+    /// Gets the dependencies of the plugin, where the key is the plugin name and the value is a list of required plugins.
+    /// </summary>
+    /// <remarks>
+    /// <c>&lt;</c>, <c>&gt;</c> and <c>=</c> may be used like standard C# comparison operators to specify version requirements.
+    /// </remarks>
+    Dictionary<string, List<string>> PluginDependencies { get; }
+
+    /// <summary>
     /// Initializes the plugin with the specified bootstrap context.
     /// </summary>
     /// <param name="context">The context used to initialize the plugin.</param>

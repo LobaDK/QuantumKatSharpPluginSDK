@@ -30,6 +30,12 @@ public class PluginBootstrapContext
     public required IServiceProvider CoreServices { get; init; }
 
     /// <summary>
+    /// Gets the shared service provider that can be used to register additional services
+    /// and rebuild the service provider to maintain consistency between the main application and plugins.
+    /// </summary>
+    public IPluginServiceProvider? SharedServiceProvider { get; init; }
+
+    /// <summary>
     /// Gets the directory path where the plugin is located.
     /// </summary>
     public required string PluginDirectory { get; init; }
