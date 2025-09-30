@@ -207,7 +207,7 @@ public class PluginManager
     /// <returns>
     /// <c>true</c> if <paramref name="actual"/> satisfies the <paramref name="requirement"/>; otherwise, <c>false</c>.
     /// </returns>
-    private static bool CheckVersion(string actual, string requirement)
+    public static bool CheckVersion(string actual, string requirement)
     {
         if (string.IsNullOrWhiteSpace(requirement)) return true;
         if (requirement.StartsWith("=="))
