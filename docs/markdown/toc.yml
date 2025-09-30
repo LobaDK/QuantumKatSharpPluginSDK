@@ -1,4 +1,12 @@
-- name: Introduction
-  href: introduction.md
-- name: Getting Started
-  href: getting-started.md
+- name: Plugin Interfaces
+  href: plugin-interfaces.md
+- name: Plugin Lifecycle
+  href: plugin-lifecycle.md
+- name: Dependency Injection
+  href: dependency-injection.md
+- name: Settings Management
+  href: settings-management.md
+- name: Discord Integration
+  href: discord-integration.md
+- name: API Reference
+  href: api-reference.md
