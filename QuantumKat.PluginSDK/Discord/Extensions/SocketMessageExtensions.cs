@@ -15,7 +15,7 @@ public static class SocketMessageExtensions
     /// <returns>
     /// <c>true</c> if the <paramref name="socketMessage"/> is a <see cref="SocketUserMessage"/>; otherwise, <c>false</c>.
     /// </returns>
-    public static bool IsUserMessage(this SocketMessage socketMessage, out SocketUserMessage userMessage)
+    public static bool IsUserMessage(this SocketMessage socketMessage, out SocketUserMessage? userMessage)
     {
         if (socketMessage is SocketUserMessage userMsg)
         {
