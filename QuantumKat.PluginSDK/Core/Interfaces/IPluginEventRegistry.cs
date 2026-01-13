@@ -39,4 +39,23 @@ public interface IPluginEventRegistry
     /// Clears all registered message subscriptions.
     /// </summary>
     void ClearAllSubscriptions();
+
+    /// <summary>
+    /// Determines whether a subscription with the specified name exists.
+    /// </summary>
+    /// <param name="name">
+    /// The unique name of the subscription to check.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if a subscription with the specified name exists; otherwise, <c>false</c>.
+    /// </returns>
+    bool IsSubscribed(string name);
+
+    /// <summary>
+    /// Gets a snapshot of all registered subscriptions for the calling assembly.
+    /// </summary>
+    /// <returns>
+    /// A dictionary containing the names and corresponding predicate-handler pairs of all registered subscriptions.
+    /// </returns>
+    Dictionary<string, (Func<SocketMessage, Task<bool>> predicate, Func<SocketMessage, Task> handler)> GetSubscriptions();
 }

@@ -131,4 +131,67 @@ public class PluginEventRegistry : IPluginEventRegistry
             _messageHandlers.TryRemove(assemblyName, out _);
         }
     }
+
+    /// <summary>
+    /// Determines whether a subscription with the specified name exists for the calling assembly.
+    /// </summary>
+    /// <param name="name">The name of the subscription to check for.</param>
+    /// <returns>
+    /// <c>true</c> if a subscription with the specified name exists for the calling assembly; otherwise, <c>false</c>.
+    /// </returns>
+    /// <remarks>
+    /// This method only checks subscriptions within the calling assembly's namespace.
+    /// Subscriptions from other assemblies are not considered.
+    /// </remarks>
+    public bool IsSubscribed(string name)
+    {
+        Assembly assembly = Assembly.GetCallingAssembly();
+        string assemblyName = assembly.ToString();
+
+        if (_messageHandlers.TryGetValue(assemblyName, out var values) && values is not null)
+        {
+            return values.ContainsKey(name);
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Retrieves all message handler subscriptions for the calling assembly.
+    /// </summary>
+    /// <returns>
+    /// A dictionary containing all subscriptions for the calling assembly, where:
+    /// <list type="bullet"> 
+    ///     <item>
+    ///         <term>Key</term>
+    ///         <description>The subscription name.</description>
+    ///     </item>
+    ///     <item>
+    ///        <term>Value</term>
+    ///       <description>The tuple of predicate and handler functions.</description>
+    ///    </item>
+    /// </list>
+    /// Returns an empty dictionary if no subscriptions exist for the calling assembly.
+    /// </returns>
+    /// <remarks>
+    /// This method only returns subscriptions registered by the calling assembly.
+    /// Subscriptions from other assemblies are not included in the result.
+    /// The returned dictionary is a snapshot and modifications to it will not affect the registry.
+    /// </remarks>
+    public Dictionary<string, (Func<SocketMessage, Task<bool>> predicate, Func<SocketMessage, Task> handler)> GetSubscriptions()
+    {
+        Assembly assembly = Assembly.GetCallingAssembly();
+        string assemblyName = assembly.ToString();
+
+        if (_messageHandlers.TryGetValue(assemblyName, out var values) && values is not null)
+        {
+            return values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
+        else
+        {
+            return [];
+        }
+    } 
 }
