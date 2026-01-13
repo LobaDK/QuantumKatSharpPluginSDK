@@ -23,6 +23,14 @@ public class PluginLoadContext(string pluginPath) : AssemblyLoadContext(true)
     /// </returns>
     protected override Assembly? Load(AssemblyName assemblyName)
     {
+        // Always prefer already-loaded assemblies (e.g., the shared SDK) from the default context
+        var defaultAssembly = AssemblyLoadContext.Default.Assemblies
+            .FirstOrDefault(a => string.Equals(a.GetName().Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
+        if (defaultAssembly != null)
+        {
+            return defaultAssembly;
+        }
+
         string? assemblyPath = _resolver.ResolveAssemblyToPath(assemblyName);
         return assemblyPath != null ? LoadFromAssemblyPath(assemblyPath) : null;
     }
