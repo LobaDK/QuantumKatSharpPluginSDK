@@ -31,7 +31,7 @@ public class SharedServiceProvider(IServiceCollection serviceCollection) : IPlug
     /// <inheritdoc />
     public void RebuildServiceProvider()
     {
-        if (_disposed) throw new ObjectDisposedException(nameof(SharedServiceProvider));
+        ObjectDisposedException.ThrowIf(_disposed, nameof(SharedServiceProvider));
         
         if (_serviceProvider is IDisposable disposable)
         {
