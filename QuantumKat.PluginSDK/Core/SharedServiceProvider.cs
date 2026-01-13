@@ -16,40 +16,45 @@ public class SharedServiceProvider(IServiceCollection serviceCollection) : IPlug
     private readonly IServiceCollection _serviceCollection = serviceCollection ?? throw new ArgumentNullException(nameof(serviceCollection));
     private IServiceProvider? _serviceProvider;
     private bool _disposed;
+    private readonly object _lock = new();
 
     /// <inheritdoc />
     public IServiceProvider ServiceProvider
     {
         get
         {
-            return _disposed
-                ? throw new ObjectDisposedException(nameof(SharedServiceProvider))
-                : (_serviceProvider ??= _serviceCollection.BuildServiceProvider());
+
+            lock (_lock)
+            {
+                ObjectDisposedException.ThrowIf(_disposed, nameof(SharedServiceProvider));
+
+                _serviceProvider ??= _serviceCollection.BuildServiceProvider(new ServiceProviderOptions{ValidateOnBuild = true, ValidateScopes = true});
+
+                return _serviceProvider;
+            }
         }
     }
 
     /// <inheritdoc />
     public void RebuildServiceProvider()
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(SharedServiceProvider));
-        
-        if (_serviceProvider is IDisposable disposable)
+        lock (_lock)
         {
-            disposable.Dispose();
+            RefreshServiceProvider();
         }
-        
-        _serviceProvider = _serviceCollection.BuildServiceProvider();
     }
 
     /// <inheritdoc />
     public void RegisterServicesAndRebuild(Action<IServiceCollection> serviceRegistration)
     {
-        ObjectDisposedException.ThrowIf(_disposed, nameof(SharedServiceProvider));
-
         ArgumentNullException.ThrowIfNull(serviceRegistration);
-        
-        serviceRegistration(_serviceCollection);
-        RebuildServiceProvider();
+        lock (_lock)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, nameof(SharedServiceProvider));
+
+            serviceRegistration(_serviceCollection);
+            RefreshServiceProvider();
+        }
     }
 
     /// <summary>
@@ -57,14 +62,31 @@ public class SharedServiceProvider(IServiceCollection serviceCollection) : IPlug
     /// </summary>
     public void Dispose()
     {
-        if (_disposed) return;
-        
+        lock (_lock)
+        {
+            if (_disposed) return;
+
+            if (_serviceProvider is IDisposable disposable)
+            {
+                disposable.Dispose();
+                _serviceProvider = null;
+            }
+
+            _disposed = true;
+            GC.SuppressFinalize(this);
+        }
+    }
+
+    private void RefreshServiceProvider()
+    {
+        ObjectDisposedException.ThrowIf(_disposed, nameof(SharedServiceProvider));
+
         if (_serviceProvider is IDisposable disposable)
         {
             disposable.Dispose();
+            _serviceProvider = null;
         }
-        
-        _disposed = true;
-        GC.SuppressFinalize(this);
+
+        _serviceProvider = _serviceCollection.BuildServiceProvider(new ServiceProviderOptions{ValidateOnBuild = true, ValidateScopes = true});
     }
 }
