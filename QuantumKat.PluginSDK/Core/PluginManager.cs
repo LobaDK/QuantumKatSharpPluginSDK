@@ -1,6 +1,5 @@
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using QuantumKat.PluginSDK.Core.Interfaces;
 
@@ -9,7 +8,7 @@ namespace QuantumKat.PluginSDK.Core;
 /// <summary>
 /// Manages the loading, initialization, and lifecycle of plugins.
 /// </summary>
-public class PluginManager
+public class PluginManager : IPluginManager
 {
     private readonly List<(IPlugin plugin, PluginLoadContext context)> _loadedPlugins = [];
     private readonly IConfiguration _configuration;
