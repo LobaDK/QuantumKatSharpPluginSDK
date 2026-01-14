@@ -7,6 +7,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuantumKat.PluginSDK", "Qua
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{26242881-51B3-4E7E-9CD3-F9176E6EBB8D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestPlugins", "TestPlugins", "{D4E5F678-90AB-CDEF-1234-56789ABCDEF0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleTestPlugin", "Tests\TestPlugins\SimpleTestPlugin\SimpleTestPlugin.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThreadedTestPlugin", "Tests\TestPlugins\ThreadedTestPlugin\ThreadedTestPlugin.csproj", "{B2C3D4E5-F678-90AB-CDEF-123456789ABC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspNetApiTestPlugin", "Tests\TestPlugins\AspNetApiTestPlugin\AspNetApiTestPlugin.csproj", "{C3D4E5F6-7890-ABCD-EF12-3456789ABCDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,8 +49,37 @@ Global
 		{26242881-51B3-4E7E-9CD3-F9176E6EBB8D}.Release|x64.Build.0 = Release|Any CPU
 		{26242881-51B3-4E7E-9CD3-F9176E6EBB8D}.Release|x86.ActiveCfg = Release|Any CPU
 		{26242881-51B3-4E7E-9CD3-F9176E6EBB8D}.Release|x86.Build.0 = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x64.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x86.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x64.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x64.Build.0 = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x86.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x86.Build.0 = Release|Any CPU
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC}.Debug|x64.Build.0 = Debug|Any CPU
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC}.Debug|x86.Build.0 = Debug|Any CPU
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC}.Release|x64.ActiveCfg = Release|Any CPU
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC}.Release|x64.Build.0 = Release|Any CPU
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC}.Release|x86.ActiveCfg = Release|Any CPU
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890} = {D4E5F678-90AB-CDEF-1234-56789ABCDEF0}
+		{B2C3D4E5-F678-90AB-CDEF-123456789ABC} = {D4E5F678-90AB-CDEF-1234-56789ABCDEF0}
+		{C3D4E5F6-7890-ABCD-EF12-3456789ABCDE} = {D4E5F678-90AB-CDEF-1234-56789ABCDEF0}
 	EndGlobalSection
 EndGlobal
