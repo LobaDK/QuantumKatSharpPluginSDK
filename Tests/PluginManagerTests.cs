@@ -21,8 +21,7 @@ public class PluginManagerTests
     {
         var testProjectDir = GetTestProjectDirectory();
         return [
-            Path.Combine(testProjectDir, "TestPlugins", "SimpleTestPlugin", "bin", "Debug", "net8.0", "SimpleTestPlugin.dll"),
-            Path.Combine(testProjectDir, "TestPlugins", "ThreadedTestPlugin", "bin", "Debug", "net8.0", "ThreadedTestPlugin.dll")
+            Path.Combine(testProjectDir, "bin", "Debug", "net8.0", "Tests.dll"),
         ];
     }
 
