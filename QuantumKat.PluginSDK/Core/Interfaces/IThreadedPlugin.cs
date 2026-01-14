@@ -6,6 +6,8 @@ namespace QuantumKat.PluginSDK.Core.Interfaces;
 /// </summary>
 public interface IThreadedPlugin : IPlugin
 {
+    public bool IsRunning { get; }
+    
     /// <summary>
     /// Starts the plugin asynchronously.
     /// </summary>
