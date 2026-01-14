@@ -16,6 +16,8 @@ public class PluginManager : IPluginManager
     private readonly IPluginServiceProvider _sharedServiceProvider;
     private readonly PluginEventRegistry _eventRegistry = new();
 
+    public List<IPlugin> LoadedPlugins => [.. _loadedPlugins.Select(lp => lp.plugin)];
+
     /// <summary>
     /// Initializes a new instance of the <see cref="PluginManager"/> class.
     /// </summary>
@@ -66,7 +68,7 @@ public class PluginManager : IPluginManager
         return !string.IsNullOrWhiteSpace(pluginPath) && File.Exists(pluginPath);
     }
 
-    public void LoadPlugins(IEnumerable<string> pluginPaths)
+    public void LoadPlugins(IEnumerable<string> pluginPaths, bool throwOnError = false)
     {
         var discovered = new List<PluginMetadata>();
 
@@ -75,7 +77,10 @@ public class PluginManager : IPluginManager
             if (!IsValidPluginPath(pluginDll))
             {
                 _logger.LogWarning("Plugin path is null, empty, or does not exist: {pluginPath}", pluginDll);
-                continue;
+                if (throwOnError)
+                {
+                    throw new FileNotFoundException($"Plugin path is null, empty, or does not exist: {pluginDll}");
+                }
             }
 
             try
@@ -85,11 +90,23 @@ public class PluginManager : IPluginManager
                 var pluginType = assembly.GetTypes()
                     .FirstOrDefault(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsAbstract);
 
-                if (pluginType == null) continue;
+                if (pluginType == null)
+                {
+                    _logger.LogWarning("No valid IPlugin implementation found in assembly: {pluginPath}", pluginDll);
+                    if (throwOnError)
+                    {
+                        throw new BadImageFormatException($"No valid IPlugin implementation found in assembly: {pluginDll}");
+                    }
+                    continue;
+                }
 
                 if (Activator.CreateInstance(pluginType) is not IPlugin pluginInstance)
                 {
                     _logger.LogError("Failed to create an instance of plugin type: {plugintype}", pluginType.FullName);
+                    if (throwOnError)
+                    {
+                        throw new InvalidOperationException($"Failed to create an instance of plugin type: {pluginType.FullName}");
+                    }
                     continue;
                 }
 
@@ -106,7 +123,21 @@ public class PluginManager : IPluginManager
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to load plugin metadata: {pluginPath}", pluginDll);
+                if (throwOnError)
+                {
+                    throw;
+                }
             }
+        }
+
+        if (discovered.Count <= 0)
+        {
+            _logger.LogInformation("No plugins discovered to load.");
+            if (throwOnError)
+            {
+                throw new InvalidOperationException("No plugins discovered to load.");
+            }
+            return;
         }
 
         var nameMap = discovered.ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
@@ -121,6 +152,10 @@ public class PluginManager : IPluginManager
             if (stack.Contains(plugin.Name))
             {
                 _logger.LogError("Circular dependency detected: {cycle}", string.Join(" -> ", stack.Append(plugin.Name)));
+                if (throwOnError)
+                {
+                    throw new InvalidOperationException($"Circular dependency detected: {string.Join(" -> ", stack.Append(plugin.Name))}");
+                }
                 return false;
             }
             stack.Push(plugin.Name);
@@ -130,6 +165,10 @@ public class PluginManager : IPluginManager
                 if (!nameMap.TryGetValue(dep.Key, out var depPlugin))
                 {
                     _logger.LogError("Missing dependency: {plugin} requires {dependency}", plugin.Name, dep.Key);
+                    if (throwOnError)
+                    {
+                        throw new InvalidOperationException($"Missing dependency: {plugin.Name} requires {dep.Key}");
+                    }
                     return false;
                 }
                 foreach (var versionReq in dep.Value)
@@ -138,6 +177,10 @@ public class PluginManager : IPluginManager
                     {
                         _logger.LogError("Version mismatch: {plugin} requires {dep} {ver}, but found {actual}",
                             plugin.Name, dep.Key, versionReq, depPlugin.Version);
+                        if (throwOnError)
+                        {
+                            throw new InvalidOperationException($"Version mismatch: {plugin.Name} requires {dep.Key} {versionReq}, but found {depPlugin.Version}");
+                        }
                         return false;
                     }
                 }
@@ -156,6 +199,10 @@ public class PluginManager : IPluginManager
             if (!Visit(plugin, new Stack<string>()))
             {
                 _logger.LogError("Failed to resolve dependencies for plugin: {plugin}", plugin.Name);
+                if (throwOnError)
+                {
+                    throw new InvalidOperationException($"Failed to resolve dependencies for plugin: {plugin.Name}");
+                }
                 continue;
             }
         }
@@ -167,6 +214,10 @@ public class PluginManager : IPluginManager
                 if (Activator.CreateInstance(meta.PluginType) is not IPlugin pluginInstance)
                 {
                     _logger.LogError("Failed to create an instance of plugin type: {plugintype}", meta.PluginType.FullName);
+                    if (throwOnError)
+                    {
+                        throw new InvalidOperationException($"Failed to create an instance of plugin type: {meta.PluginType.FullName}");
+                    }
                     continue;
                 }
                 var bootstrapContext = new PluginBootstrapContext
@@ -184,6 +235,10 @@ public class PluginManager : IPluginManager
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to initialize plugin: {plugin}", meta.Name);
+                if (throwOnError)
+                {
+                    throw;
+                }
             }
         }
     }

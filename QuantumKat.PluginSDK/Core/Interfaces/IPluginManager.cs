@@ -7,13 +7,15 @@ namespace QuantumKat.PluginSDK.Core.Interfaces;
 /// </summary>
 public interface IPluginManager
 {
+    public List<IPlugin> LoadedPlugins { get; }
+    
     /// <summary>
     /// Loads and initializes plugins from the specified collection of plugin assembly file paths.
     /// </summary>
     /// <param name="pluginPaths">
     /// An <see cref="IEnumerable{String}"/> containing the file paths to the plugin assemblies to load.
     /// </param>
-    void LoadPlugins(IEnumerable<string> pluginPaths);
+    void LoadPlugins(IEnumerable<string> pluginPaths, bool throwOnError = true);
 
     /// <summary>
     /// Registers all services provided by the loaded plugins into the shared service provider.
