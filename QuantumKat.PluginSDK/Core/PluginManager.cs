@@ -87,10 +87,10 @@ public class PluginManager : IPluginManager
             {
                 var context = new PluginLoadContext(pluginDll);
                 var assembly = context.LoadFromAssemblyPath(pluginDll);
-                var pluginType = assembly.GetTypes()
-                    .FirstOrDefault(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsAbstract);
+                var pluginTypes = assembly.GetTypes()
+                    .Where(t => typeof(IPlugin).IsAssignableFrom(t) && !t.IsAbstract);
 
-                if (pluginType == null)
+                if (pluginTypes == null)
                 {
                     _logger.LogWarning("No valid IPlugin implementation found in assembly: {pluginPath}", pluginDll);
                     if (throwOnError)
@@ -100,25 +100,28 @@ public class PluginManager : IPluginManager
                     continue;
                 }
 
-                if (Activator.CreateInstance(pluginType) is not IPlugin pluginInstance)
+                foreach (Type pluginType in pluginTypes)
                 {
-                    _logger.LogError("Failed to create an instance of plugin type: {plugintype}", pluginType.FullName);
-                    if (throwOnError)
+                    if (Activator.CreateInstance(pluginType) is not IPlugin pluginInstance)
                     {
-                        throw new InvalidOperationException($"Failed to create an instance of plugin type: {pluginType.FullName}");
+                        _logger.LogError("Failed to create an instance of plugin type: {plugintype}", pluginType.FullName);
+                        if (throwOnError)
+                        {
+                            throw new InvalidOperationException($"Failed to create an instance of plugin type: {pluginType.FullName}");
+                        }
+                        continue;
                     }
-                    continue;
-                }
 
-                discovered.Add(new PluginMetadata
-                {
-                    PluginType = pluginType,
-                    Name = pluginInstance.Name,
-                    Version = pluginInstance.Version,
-                    Dependencies = pluginInstance.PluginDependencies ?? [],
-                    LoadContext = context,
-                    Path = pluginDll
-                });
+                    discovered.Add(new PluginMetadata
+                    {
+                        PluginType = pluginType,
+                        Name = pluginInstance.Name,
+                        Version = pluginInstance.Version,
+                        Dependencies = pluginInstance.PluginDependencies ?? [],
+                        LoadContext = context,
+                        Path = pluginDll
+                    });
+                }
             }
             catch (Exception ex)
             {
