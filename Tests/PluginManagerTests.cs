@@ -307,4 +307,36 @@ public class PluginManagerTests
             Assert.False(plugin.IsRunning);
         }
     }
+
+    [Fact]
+    public void RegisteredPlugins_CanShareSettings()
+    {
+        var testPluginPaths = GetTestPluginPaths();
+
+        // Skip test if plugins haven't been built yet
+        if (!testPluginPaths.All(File.Exists))
+        {
+            return;
+        }
+
+        ConfigurationBuilder configurationBuilder = new();
+        configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+        { { "SharedSetting", "SharedValue" } });
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(configurationBuilder);
+        var sharedServiceProvider = new SharedServiceProvider(serviceCollection);
+
+        var pluginManager = new PluginManager(sharedServiceProvider, _configurationMock.Object, _logger);
+
+        pluginManager.LoadPlugins(testPluginPaths, true);
+        pluginManager.RegisterAllPluginServices();
+
+        ConfigurationBuilder updatedConfigurationBuilder = sharedServiceProvider.ServiceProvider.GetRequiredService<ConfigurationBuilder>();
+        IConfigurationRoot configurationRoot = updatedConfigurationBuilder.Build();
+
+        Assert.Equal("SharedValue", configurationRoot["SharedSetting"]);
+        Assert.Equal("True", configurationRoot["Enabled"]);
+        Assert.Equal("test", configurationRoot["TestValue"]);
+    }
 }

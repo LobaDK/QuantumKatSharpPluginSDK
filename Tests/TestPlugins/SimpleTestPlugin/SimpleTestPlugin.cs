@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using QuantumKat.PluginSDK.Core;
 using QuantumKat.PluginSDK.Core.Interfaces;
@@ -19,6 +20,9 @@ public class SimpleTestPlugin : IPlugin
     public void Initialize(PluginBootstrapContext context)
     {
         // Simple initialization - no special setup needed
+
+        ConfigurationBuilder configurationBuilder = context.CoreServices.GetRequiredService<ConfigurationBuilder>();
+        configurationBuilder.AddJsonFile(Path.Combine(context.PluginDirectory, "TestPlugins/SimpleTestPlugin/", "simpletestpluginsettings.json"), optional: false, reloadOnChange: false);
     }
 
     public void RegisterServices(IServiceCollection services)
