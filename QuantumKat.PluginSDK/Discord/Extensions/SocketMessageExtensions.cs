@@ -1,5 +1,4 @@
 using Discord;
-using Discord.WebSocket;
 
 namespace QuantumKat.PluginSDK.Discord.Extensions;
 
@@ -14,11 +13,11 @@ public static class IMessageExtensions
     /// </summary>
     /// <param name="message">The <see cref="IMessage"/> to check.</param>
     /// <returns>
-    /// <c>true</c> if the <paramref name="message"/> is a <see cref="SocketUserMessage"/>; otherwise, <c>false</c>.
+    /// <c>true</c> if the <paramref name="message"/> is a <see cref="IUserMessage"/>; otherwise, <c>false</c>.
     /// </returns>
-    public static bool IsUserMessage(this IMessage message, out SocketUserMessage? userMessage)
+    public static bool IsUserMessage(this IMessage message, out IUserMessage? userMessage)
     {
-        if (message is SocketUserMessage userMsg)
+        if (message is IUserMessage userMsg)
         {
             userMessage = userMsg;
             return true;
