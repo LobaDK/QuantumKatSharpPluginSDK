@@ -3,7 +3,7 @@ using Discord.WebSocket;
 
 namespace QuantumKat.PluginSDK.Discord.Extensions;
 
-public static class DiscordUserExtensions
+public static class IUserExtensions
 {
     private static DiscordSocketClient? _client;
 
