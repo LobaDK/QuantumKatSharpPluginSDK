@@ -167,7 +167,10 @@ public class PluginManagerTests
 
         testPluginPaths.Add(dynamicPluginPath);
 
+        ConfigurationBuilder configurationBuilder = new();
+
         var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(configurationBuilder);
         var sharedServiceProvider = new SharedServiceProvider(serviceCollection);
 
         var pluginManager = new PluginManager(sharedServiceProvider, _configurationMock.Object, _logger);
@@ -238,7 +241,10 @@ public class PluginManagerTests
             return;
         }
 
+        ConfigurationBuilder configurationBuilder = new();
+
         var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(configurationBuilder);
         var sharedServiceProvider = new SharedServiceProvider(serviceCollection);
 
         var pluginManager = new PluginManager(sharedServiceProvider, _configurationMock.Object, _logger);
@@ -282,7 +288,10 @@ public class PluginManagerTests
             return;
         }
 
+        ConfigurationBuilder configurationBuilder = new();
+
         var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(configurationBuilder);
         var sharedServiceProvider = new SharedServiceProvider(serviceCollection);
 
         var pluginManager = new PluginManager(sharedServiceProvider, _configurationMock.Object, _logger);
