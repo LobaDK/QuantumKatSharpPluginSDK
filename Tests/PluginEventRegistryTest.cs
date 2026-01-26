@@ -84,4 +84,28 @@ public class PluginEventRegistryTest
         Assert.Contains(event2, events);
         Assert.Equal(2, events.Count);
     }
+
+    [Fact]
+    public async Task RegisteredEvents_CanInvoke()
+    {
+        // Arrange
+        var registry = new PluginEventRegistry();
+        
+        var event1 = "Event1";
+        var response = "";
+        
+        static Task<bool> predicate(IMessage message) => Task.FromResult(message.Content == "Hello!");
+        Task handler(IMessage _) => Task.Run(() => response = "Handler Invoked");
+        
+        registry.SubscribeToMessage(event1, predicate, handler);
+
+        Mock<IMessage> mockMessage = new();
+        mockMessage.SetupGet(m => m.Content).Returns("Hello!");
+
+        // Act
+        await registry.DispatchMessageAsync(mockMessage.Object);
+
+        // Assert
+        Assert.Equal("Handler Invoked", response);
+    }
 }
