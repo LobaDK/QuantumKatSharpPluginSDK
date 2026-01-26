@@ -1,4 +1,4 @@
-using Discord.WebSocket;
+using Discord;
 
 namespace QuantumKat.PluginSDK.Core.Interfaces;
 
@@ -7,24 +7,24 @@ namespace QuantumKat.PluginSDK.Core.Interfaces;
 /// </summary>
 ///
 /// <remarks>
-/// Implementations of this interface allow plugins to register handlers for specific <see cref="SocketMessage"/> events
+/// Implementations of this interface allow plugins to register handlers for specific <see cref="IMessage"/> events
 /// based on a predicate filter.
 /// </remarks>
 public interface IPluginEventRegistry
 {
     /// <summary>
-    /// Subscribes to incoming <see cref="SocketMessage"/> events that match the specified predicate.
+    /// Subscribes to incoming <see cref="IMessage"/> events that match the specified predicate.
     /// </summary>
     /// <param name="name"
     /// >A unique name for the subscription.
     /// </param>
     /// <param name="predicate">
-    /// An asynchronous function that determines whether a given <see cref="SocketMessage"/> should trigger the handler.
+    /// An asynchronous function that determines whether a given <see cref="IMessage"/> should trigger the handler.
     /// </param>
     /// <param name="handler">
-    /// An asynchronous function to handle the <see cref="SocketMessage"/> when the predicate returns <c>true</c>.
+    /// An asynchronous function to handle the <see cref="IMessage"/> when the predicate returns <c>true</c>.
     /// </param>
-    void SubscribeToMessage(string name, Func<SocketMessage, Task<bool>> predicate, Func<SocketMessage, Task> handler);
+    void SubscribeToMessage(string name, Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler);
 
 
     /// <summary>
@@ -57,5 +57,5 @@ public interface IPluginEventRegistry
     /// <returns>
     /// A dictionary containing the names and corresponding predicate-handler pairs of all registered subscriptions.
     /// </returns>
-    Dictionary<string, (Func<SocketMessage, Task<bool>> predicate, Func<SocketMessage, Task> handler)> GetSubscriptions();
+    Dictionary<string, (Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler)> GetSubscriptions();
 }

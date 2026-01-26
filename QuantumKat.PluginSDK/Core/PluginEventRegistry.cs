@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
-using Discord.WebSocket;
+using Discord;
 using QuantumKat.PluginSDK.Core.Interfaces;
 
 namespace QuantumKat.PluginSDK.Core;
@@ -9,7 +9,7 @@ namespace QuantumKat.PluginSDK.Core;
 /// A registry for subscribing to plugin message events.
 /// </summary>
 /// <remarks>
-/// This registry allows plugins to register handlers for specific <see cref="SocketMessage"/> events
+/// This registry allows plugins to register handlers for specific <see cref="IMessage"/> events
 /// based on a predicate filter.
 /// </remarks>
 public class PluginEventRegistry : IPluginEventRegistry
@@ -23,21 +23,21 @@ public class PluginEventRegistry : IPluginEventRegistry
     /// - The predicate function to filter messages.
     /// - The handler function to process the message.
     /// </remarks>
-    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, (Func<SocketMessage, Task<bool>> predicate, Func<SocketMessage, Task> handler)>> _messageHandlers = [];
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, (Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler)>> _messageHandlers = [];
 
     /// <summary>
-    /// Subscribes a handler to process <see cref="SocketMessage"/> instances that match a specified predicate.
+    /// Subscribes a handler to process <see cref="IMessage"/> instances that match a specified predicate.
     /// </summary>
     /// <param name="name">
     /// A unique identifier for this subscription within the calling assembly. Used for unsubscribing.
     /// </param>
     /// <param name="predicate">
-    /// A asynchronous function that determines whether a given <see cref="SocketMessage"/> should be handled.
+    /// A asynchronous function that determines whether a given <see cref="IMessage"/> should be handled.
     /// Returns <c>true</c> if the message should be handled; otherwise, <c>false</c>.
     /// This function is called for every message dispatched through the registry.
     /// </param>
     /// <param name="handler">
-    /// An asynchronous function to handle the <see cref="SocketMessage"/> when the predicate returns <c>true</c>.
+    /// An asynchronous function to handle the <see cref="IMessage"/> when the predicate returns <c>true</c>.
     /// Any exceptions thrown by this handler will be caught and logged to the console.
     /// </param>
     /// <exception cref="InvalidOperationException">
@@ -47,15 +47,15 @@ public class PluginEventRegistry : IPluginEventRegistry
     /// Each plugin (assembly) maintains its own namespace of subscription names.
     /// The same name can be used by different assemblies without conflict.
     /// </remarks>
-    public void SubscribeToMessage(string name, Func<SocketMessage, Task<bool>> predicate, Func<SocketMessage, Task> handler)
+    public void SubscribeToMessage(string name, Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler)
     {
         Assembly assembly = Assembly.GetCallingAssembly();
         string assemblyName = assembly.ToString();
 
-        (Func<SocketMessage, Task<bool>>, Func<SocketMessage, Task>) newHandler = (predicate, handler);
+        (Func<IMessage, Task<bool>>, Func<IMessage, Task>) newHandler = (predicate, handler);
         var handlersDict = _messageHandlers.GetOrAdd(
             assemblyName,
-            _ => new ConcurrentDictionary<string, (Func<SocketMessage, Task<bool>>, Func<SocketMessage, Task>)>());
+            _ => new ConcurrentDictionary<string, (Func<IMessage, Task<bool>>, Func<IMessage, Task>)>());
 
         if (!handlersDict.TryAdd(name, newHandler))
         {
@@ -64,15 +64,15 @@ public class PluginEventRegistry : IPluginEventRegistry
     }
 
     /// <summary>
-    /// Asynchronously dispatches a <see cref="SocketMessage"/> to all registered message handlers whose predicates match the message.
+    /// Asynchronously dispatches a <see cref="IMessage"/> to all registered message handlers whose predicates match the message.
     /// </summary>
-    /// <param name="message">The <see cref="SocketMessage"/> to be dispatched to handlers.</param>
+    /// <param name="message">The <see cref="IMessage"/> to be dispatched to handlers.</param>
     /// <returns>A task that represents the asynchronous dispatch operation.</returns>
-    public async Task DispatchMessageAsync(SocketMessage message)
+    public async Task DispatchMessageAsync(IMessage message)
     {
         foreach (var handlers in _messageHandlers.Values.ToList())
         {
-            foreach (KeyValuePair<string, (Func<SocketMessage, Task<bool>>, Func<SocketMessage, Task>)> handler in handlers)
+            foreach (KeyValuePair<string, (Func<IMessage, Task<bool>>, Func<IMessage, Task>)> handler in handlers)
             {
                 try
                 {
@@ -105,7 +105,7 @@ public class PluginEventRegistry : IPluginEventRegistry
 
         if (_messageHandlers.TryGetValue(assemblyName, out var values) && values is not null)
         {
-            KeyValuePair<string, (Func<SocketMessage, Task<bool>>, Func<SocketMessage, Task>)> toRemove = values.FirstOrDefault(v => v.Key == name);
+            KeyValuePair<string, (Func<IMessage, Task<bool>>, Func<IMessage, Task>)> toRemove = values.FirstOrDefault(v => v.Key == name);
             if (toRemove.Key != null)
             {
                 values.TryRemove(toRemove.Key, out _);
@@ -180,7 +180,7 @@ public class PluginEventRegistry : IPluginEventRegistry
     /// Subscriptions from other assemblies are not included in the result.
     /// The returned dictionary is a snapshot and modifications to it will not affect the registry.
     /// </remarks>
-    public Dictionary<string, (Func<SocketMessage, Task<bool>> predicate, Func<SocketMessage, Task> handler)> GetSubscriptions()
+    public Dictionary<string, (Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler)> GetSubscriptions()
     {
         Assembly assembly = Assembly.GetCallingAssembly();
         string assemblyName = assembly.ToString();

@@ -1,4 +1,5 @@
-using Discord.WebSocket;
+using Discord;
+using Moq;
 using QuantumKat.PluginSDK.Core;
 
 namespace Tests;
@@ -11,8 +12,8 @@ public class PluginEventRegistryTest
         // Arrange
         var registry = new PluginEventRegistry();
         var eventName = "TestEvent";
-        static Task<bool> predicate(SocketMessage _) => Task.FromResult(true);
-        static Task handler(SocketMessage _) => Task.CompletedTask;
+        static Task<bool> predicate(IMessage _) => Task.FromResult(true);
+        static Task handler(IMessage _) => Task.CompletedTask;
         
         // Act
         registry.SubscribeToMessage(eventName, predicate, handler);
@@ -27,8 +28,8 @@ public class PluginEventRegistryTest
         // Arrange
         var registry = new PluginEventRegistry();
         var eventName = "TestEvent";
-        static Task<bool> predicate(SocketMessage _) => Task.FromResult(true);
-        static Task handler(SocketMessage _) => Task.CompletedTask;
+        static Task<bool> predicate(IMessage _) => Task.FromResult(true);
+        static Task handler(IMessage _) => Task.CompletedTask;
         registry.SubscribeToMessage(eventName, predicate, handler);
         
         // Act & Assert
@@ -41,8 +42,8 @@ public class PluginEventRegistryTest
         // Arrange
         var registry = new PluginEventRegistry();
         var eventName = "TestEvent";
-        static Task<bool> predicate(SocketMessage _) => Task.FromResult(true);
-        static Task handler(SocketMessage _) => Task.CompletedTask;
+        static Task<bool> predicate(IMessage _) => Task.FromResult(true);
+        static Task handler(IMessage _) => Task.CompletedTask;
         registry.SubscribeToMessage(eventName, predicate, handler);
         
         // Act
@@ -70,8 +71,8 @@ public class PluginEventRegistryTest
         var registry = new PluginEventRegistry();
         var event1 = "Event1";
         var event2 = "Event2";
-        static Task<bool> predicate(SocketMessage _) => Task.FromResult(true);
-        static Task handler(SocketMessage _) => Task.CompletedTask;
+        static Task<bool> predicate(IMessage _) => Task.FromResult(true);
+        static Task handler(IMessage _) => Task.CompletedTask;
         registry.SubscribeToMessage(event1, predicate, handler);
         registry.SubscribeToMessage(event2, predicate, handler);
         

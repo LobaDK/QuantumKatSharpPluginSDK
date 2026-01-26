@@ -1,4 +1,4 @@
-using Discord.WebSocket;
+using Discord;
 
 namespace QuantumKat.PluginSDK.Core.Interfaces;
 
@@ -53,6 +53,6 @@ public interface IPluginManager
     /// <summary>
     /// Dispatches a message to all registered plugin handlers.
     /// </summary>
-    /// <param name="message">The <see cref="SocketMessage"/> to dispatch.</param>
-    Task DispatchMessageAsync(SocketMessage message);
+    /// <param name="message">The <see cref="IMessage"/> to dispatch.</param>
+    Task DispatchMessageAsync(IMessage message);
 }

@@ -1,4 +1,4 @@
-using Discord.WebSocket;
+using Discord;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using QuantumKat.PluginSDK.Core.Interfaces;
@@ -408,8 +408,8 @@ public class PluginManager : IPluginManager
     /// <summary>
     /// Dispatches a message to all registered plugin handlers.
     /// </summary>
-    /// <param name="message">The <see cref="SocketMessage"/> to dispatch.</param>
-    public async Task DispatchMessageAsync(SocketMessage message)
+    /// <param name="message">The <see cref="IMessage"/> to dispatch.</param>
+    public async Task DispatchMessageAsync(IMessage message)
     {
         await _eventRegistry.DispatchMessageAsync(message);
     }
