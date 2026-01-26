@@ -1,6 +1,8 @@
 using Discord;
+using Discord.WebSocket;
 using Moq;
 using QuantumKat.PluginSDK.Core;
+using QuantumKat.PluginSDK.Discord.Extensions;
 
 namespace Tests;
  
@@ -107,5 +109,85 @@ public class PluginEventRegistryTest
 
         // Assert
         Assert.Equal("Handler Invoked", response);
+    }
+
+    [Fact]
+    public async Task RegisteredEvents_OnlyMatchingInvoke()
+    {
+        // Arrange
+        var registry = new PluginEventRegistry();
+        
+        var event1 = "Event1";
+        var response = "";
+        
+        static Task<bool> predicate(IMessage message) => Task.FromResult(message.Content == "Hello!");
+        Task handler(IMessage _) => Task.Run(() => response = "Handler Invoked");
+        
+        registry.SubscribeToMessage(event1, predicate, handler);
+
+        Mock<IMessage> mockMessage = new();
+        mockMessage.SetupGet(m => m.Content).Returns("Goodbye!");
+
+        // Act
+        await registry.DispatchMessageAsync(mockMessage.Object);
+
+        // Assert
+        Assert.Equal("", response);
+    }
+
+    [Fact]
+    public async Task RegisteredEvents_SupportsAdvancedPredicates()
+    {
+        // Arrange
+        var registry = new PluginEventRegistry();
+        
+        var event1 = "DoesMessageContainSecret";
+        var response1 = "";
+
+        var event2 = "IsMessageValidCommand";
+        var response2 = "";
+        
+        static Task<bool> predicate(IMessage message) => Task.FromResult(message.Content.Contains("Secret"));
+        Task handler1(IMessage _) => Task.Run(() => response1 = "Handler1 Invoked");
+        Task handler2(IMessage _) => Task.Run(() => response2 = "Handler2 Invoked");
+        
+        registry.SubscribeToMessage(event1, predicate, handler1);
+        registry.SubscribeToMessage(event2, AdvancedPredicate, handler2);
+
+        Mock<IMessage> mockMessage1 = new();
+        mockMessage1.SetupGet(m => m.Content).Returns("This is a Secret Message!");
+        mockMessage1.SetupGet(m => m.Author).Returns(new Mock<IUser>().Object);
+        mockMessage1.SetupGet(m => m.Author.IsBot).Returns(true);
+
+        Mock<IUserMessage> mockMessage2 = new();
+        mockMessage2.SetupGet(m => m.Content).Returns("!help");
+        mockMessage2.SetupGet(m => m.Author).Returns(new Mock<IUser>().Object);
+        mockMessage2.SetupGet(m => m.Author.IsBot).Returns(false);
+
+        // Act
+        await registry.DispatchMessageAsync(mockMessage1.Object);
+        await registry.DispatchMessageAsync(mockMessage2.Object);
+
+        // Assert
+        Assert.Equal("Handler1 Invoked", response1);
+        Assert.Equal("Handler2 Invoked", response2);
+    }
+
+    private static async Task<bool> AdvancedPredicate(IMessage message)
+    {
+        if (message.IsFromBot())
+        {
+            return false;
+        }
+
+        if (message.IsUserMessage(out var userMessage) && userMessage is not null)
+        {
+            if (userMessage.Content.StartsWith("!"))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
