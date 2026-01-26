@@ -39,11 +39,17 @@ public interface IPlugin
     /// Initializes the plugin with the specified bootstrap context.
     /// </summary>
     /// <param name="context">The context used to initialize the plugin.</param>
-    void Initialize(PluginBootstrapContext context);
+    virtual void Initialize(PluginBootstrapContext context)
+    {
+        return;
+    }
 
     /// <summary>
     /// Registers the plugin's services with the provided service collection.
     /// </summary>
     /// <param name="services">The service collection to register services with.</param>
-    void RegisterServices(IServiceCollection services);
+    virtual void RegisterServices(IServiceCollection services)
+    {
+        return;
+    }
 }
