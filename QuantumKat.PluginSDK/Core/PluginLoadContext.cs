@@ -24,7 +24,7 @@ public class PluginLoadContext(string pluginPath) : AssemblyLoadContext(true)
     protected override Assembly? Load(AssemblyName assemblyName)
     {
         // Always prefer already-loaded assemblies (e.g., the shared SDK) from the default context
-        var defaultAssembly = AssemblyLoadContext.Default.Assemblies
+        var defaultAssembly = Default.Assemblies
             .FirstOrDefault(a => string.Equals(a.GetName().Name, assemblyName.Name, StringComparison.OrdinalIgnoreCase));
         if (defaultAssembly != null)
         {

@@ -1,5 +1,4 @@
 using Discord;
-using Discord.WebSocket;
 using Moq;
 using QuantumKat.PluginSDK.Core;
 using QuantumKat.PluginSDK.Discord.Extensions;
