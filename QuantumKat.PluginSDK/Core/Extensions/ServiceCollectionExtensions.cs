@@ -41,18 +41,11 @@ public static class ServiceCollectionExtensions
 /// <summary>
 /// Builder for configuring and managing the Plugin SDK.
 /// </summary>
-public class PluginSDKBuilder
+public class PluginSDKBuilder(IPluginServiceProvider sharedServiceProvider, IConfiguration configuration, ILogger logger)
 {
-    private readonly IPluginServiceProvider _sharedServiceProvider;
-    private readonly IConfiguration _configuration;
-    private readonly ILogger _logger;
-
-    internal PluginSDKBuilder(IPluginServiceProvider sharedServiceProvider, IConfiguration configuration, ILogger logger)
-    {
-        _sharedServiceProvider = sharedServiceProvider;
-        _configuration = configuration;
-        _logger = logger;
-    }
+    private readonly IPluginServiceProvider _sharedServiceProvider = sharedServiceProvider;
+    private readonly IConfiguration _configuration = configuration;
+    private readonly ILogger _logger = logger;
 
     /// <summary>
     /// Gets the shared service provider instance.
