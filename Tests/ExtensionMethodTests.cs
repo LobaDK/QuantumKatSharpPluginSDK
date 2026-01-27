@@ -1,7 +1,5 @@
-using System;
 using System.Reflection;
 using Discord;
-using Discord.WebSocket;
 using Moq;
 using QuantumKat.PluginSDK.Discord.Extensions;
 
