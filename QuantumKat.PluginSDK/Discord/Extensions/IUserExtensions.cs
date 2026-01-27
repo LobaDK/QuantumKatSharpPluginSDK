@@ -5,9 +5,9 @@ namespace QuantumKat.PluginSDK.Discord.Extensions;
 
 public static class IUserExtensions
 {
-    private static DiscordSocketClient? _client;
+    private static IDiscordClient? _client;
 
-    public static void Initialize(DiscordSocketClient client)
+    public static void Initialize(IDiscordClient client)
     {
         _client = client;
     }
