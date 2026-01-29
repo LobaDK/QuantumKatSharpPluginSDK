@@ -51,14 +51,20 @@ public interface IThreadedPlugin : IPlugin
 ```csharp
 public interface IPluginEventRegistry
 {
-    void SubscribeToMessage(Func<SocketMessage, bool> predicate, Func<SocketMessage, Task> handler);
-    Task DispatchMessageAsync(SocketMessage message);
+    void SubscribeToMessage(string name, Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler);
+    void UnsubscribeFromMessage(string name);
+    void ClearAllSubscriptions();
+    bool IsSubscribed(string name);
+    Dictionary<string, (Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler)> GetSubscriptions();
 }
 ```
 
 **Methods:**
-- `SubscribeToMessage`: Register message event handler with predicate filter
-- `DispatchMessageAsync`: Dispatch message to all registered handlers
+- `SubscribeToMessage(string, Func<IMessage, Task<bool>>, Func<IMessage, Task>)`: Register named message event handler with async predicate filter
+- `UnsubscribeFromMessage(string)`: Unregister a specific handler by name
+- `ClearAllSubscriptions()`: Clear all handlers registered by the calling plugin
+- `IsSubscribed(string)`: Check if a subscription exists by name
+- `GetSubscriptions()`: Get all subscriptions registered by the calling plugin
 
 #### IPluginServiceProvider
 ```csharp
@@ -81,17 +87,18 @@ public interface IPluginServiceProvider
 
 #### PluginManager
 ```csharp
-public class PluginManager
+public class PluginManager : IPluginManager
 {
     public PluginManager(IPluginServiceProvider sharedServiceProvider, IConfiguration configuration, ILogger logger);
     
-    public void LoadPlugins(IEnumerable<string> pluginPaths);
+    public List<IPlugin> LoadedPlugins { get; }
+    public void LoadPlugins(IEnumerable<string> pluginPaths, bool throwOnError = true);
     public void RegisterAllPluginServices();
     public async Task StartAllPluginsAsync(CancellationToken cancellationToken);
     public async Task StopAllPluginsAsync(CancellationToken cancellationToken);
     public async Task StartPluginAsync(IThreadedPlugin plugin, CancellationToken cancellationToken);
     public async Task StopPluginAsync(IThreadedPlugin plugin, CancellationToken cancellationToken);
-    public async Task DispatchMessageAsync(SocketMessage message);
+    public async Task DispatchMessageAsync(IMessage message);
 }
 ```
 
@@ -100,14 +107,17 @@ public class PluginManager
 - `configuration`: Application configuration
 - `logger`: Logger instance
 
+**Properties:**
+- `LoadedPlugins`: List of all loaded plugins
+
 **Methods:**
-- `LoadPlugins(IEnumerable<string>)`: Load plugins from assembly paths
+- `LoadPlugins(IEnumerable<string>, bool)`: Load plugins from assembly paths
 - `RegisterAllPluginServices()`: Register all plugin services
 - `StartAllPluginsAsync(CancellationToken)`: Start all threaded plugins
 - `StopAllPluginsAsync(CancellationToken)`: Stop all threaded plugins
 - `StartPluginAsync(IThreadedPlugin, CancellationToken)`: Start specific plugin
 - `StopPluginAsync(IThreadedPlugin, CancellationToken)`: Stop specific plugin
-- `DispatchMessageAsync(SocketMessage)`: Dispatch message to plugins
+- `DispatchMessageAsync(IMessage)`: Dispatch message to all registered handlers
 
 #### PluginBootstrapContext
 ```csharp
@@ -150,8 +160,12 @@ public class SharedServiceProvider : IPluginServiceProvider, IDisposable
 ```csharp
 public class PluginEventRegistry : IPluginEventRegistry
 {
-    public void SubscribeToMessage(Func<SocketMessage, bool> predicate, Func<SocketMessage, Task> handler);
-    public async Task DispatchMessageAsync(SocketMessage message);
+    public void SubscribeToMessage(string name, Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler);
+    public void UnsubscribeFromMessage(string name);
+    public void ClearAllSubscriptions();
+    public bool IsSubscribed(string name);
+    public Dictionary<string, (Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler)> GetSubscriptions();
+    public async Task DispatchMessageAsync(IMessage message);
 }
 ```
 
@@ -282,6 +296,21 @@ Multiple constraints can be specified in a list:
 ```csharp
 [">=1.0.0", "<2.0.0"] // Version 1.0.0 or higher, but less than 2.0.0
 ```
+
+## Discord Namespace: QuantumKat.PluginSDK.Discord.Extensions
+
+### IMessageExtensions
+```csharp
+public static class IMessageExtensions
+{
+    public static bool IsUserMessage(this IMessage message, out IUserMessage? userMessage);
+    public static bool IsFromBot(this IMessage message);
+}
+```
+
+**Extension Methods:**
+- `IsUserMessage(IMessage, out IUserMessage?)`: Check if message is a user message and get typed reference
+- `IsFromBot(IMessage)`: Check if message is from a bot
 
 ## Error Handling
 

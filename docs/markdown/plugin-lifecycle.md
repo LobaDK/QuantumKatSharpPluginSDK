@@ -44,7 +44,7 @@ public PluginManager(
 
 #### LoadPlugins
 ```csharp
-public void LoadPlugins(IEnumerable<string> pluginPaths)
+public void LoadPlugins(IEnumerable<string> pluginPaths, bool throwOnError = true)
 ```
 
 Loads plugins from the specified assembly paths with dependency resolution.
@@ -56,6 +56,10 @@ Loads plugins from the specified assembly paths with dependency resolution.
 4. Detects and reports circular dependencies
 5. Loads plugins in dependency order
 6. Initializes each plugin with a `PluginBootstrapContext`
+
+**Parameters:**
+- `pluginPaths`: Collection of paths to plugin assemblies
+- `throwOnError`: If true, throws exceptions on plugin loading failures; if false, logs warnings and continues
 
 #### RegisterAllPluginServices
 ```csharp
@@ -124,9 +128,10 @@ public void Initialize(PluginBootstrapContext context)
     // Access core services
     var dbContext = context.CoreServices.GetRequiredService<IDbContext>();
     
-    // Register for events
+    // Register for named events with async predicate
     context.EventRegistry?.SubscribeToMessage(
-        msg => msg.Content.StartsWith("!"),
+        "command-handler",
+        async msg => msg.Content.StartsWith("!"),
         HandleCommand);
     
     // Register additional services dynamically
@@ -171,24 +176,29 @@ Common dependency resolution errors:
 
 ## Event System
 
-The plugin SDK includes an event system for inter-plugin communication.
+The plugin SDK includes an event system for inter-plugin communication using named subscriptions.
 
 ### PluginEventRegistry
 
 ```csharp
 public class PluginEventRegistry : IPluginEventRegistry
 {
-    public void SubscribeToMessage(Func<SocketMessage, bool> predicate, Func<SocketMessage, Task> handler)
-    public async Task DispatchMessageAsync(SocketMessage message)
+    public void SubscribeToMessage(string name, Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler);
+    public void UnsubscribeFromMessage(string name);
+    public void ClearAllSubscriptions();
+    public bool IsSubscribed(string name);
+    public Dictionary<string, (Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler)> GetSubscriptions();
+    public async Task DispatchMessageAsync(IMessage message);
 }
 ```
 
-### Event Registration
+### Event Registration with Named Subscriptions
 
 ```csharp
 // In plugin initialization
 context.EventRegistry?.SubscribeToMessage(
-    message => message.Content.StartsWith("!hello"),
+    "hello-command",
+    async message => message.Content.StartsWith("!hello"),
     async message => {
         await message.Channel.SendMessageAsync($"Hello {message.Author.Username}!");
     });
@@ -197,8 +207,24 @@ context.EventRegistry?.SubscribeToMessage(
 ### Event Dispatching
 
 ```csharp
-// In your application
-await pluginManager.DispatchMessageAsync(socketMessage);
+// In your application - dispatch to all registered handlers
+await pluginManager.DispatchMessageAsync(discordMessage);
+```
+
+### Subscription Management
+
+```csharp
+// Check if a handler is registered
+bool hasHandler = eventRegistry?.IsSubscribed("hello-command") ?? false;
+
+// Get all subscriptions from this plugin
+var subs = eventRegistry?.GetSubscriptions();
+
+// Unregister a specific handler
+eventRegistry?.UnsubscribeFromMessage("hello-command");
+
+// Clear all handlers from this plugin
+eventRegistry?.ClearAllSubscriptions();
 ```
 
 ## Complete Lifecycle Example
@@ -268,9 +294,10 @@ public class ExamplePlugin : IThreadedPlugin
         _logger = context.Logger;
         _logger.LogInformation("ExamplePlugin initializing...");
         
-        // Subscribe to events
+        // Subscribe to events with named subscriptions
         context.EventRegistry?.SubscribeToMessage(
-            msg => msg.Content == "!status",
+            "status-command",
+            async msg => msg.Content == "!status",
             HandleStatusCommand);
     }
 
@@ -301,7 +328,7 @@ public class ExamplePlugin : IThreadedPlugin
         await Task.CompletedTask;
     }
 
-    private async Task HandleStatusCommand(SocketMessage message)
+    private async Task HandleStatusCommand(IMessage message)
     {
         var status = _isRunning ? "Running" : "Stopped";
         await message.Channel.SendMessageAsync($"ExamplePlugin status: {status}");

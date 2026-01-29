@@ -6,25 +6,25 @@ The QuantumKat Plugin SDK provides specialized support for Discord bot plugins t
 
 ## Discord Extensions
 
-### SocketMessageExtensions
+### IMessageExtensions
 
 The SDK provides extension methods to simplify working with Discord messages.
 
 #### IsUserMessage
 
-Determines if a message is from a user and provides strongly-typed access:
+Determines if a message is from a user and provides strongly-typed access to IUserMessage:
 
 ```csharp
-public static bool IsUserMessage(this SocketMessage socketMessage, out SocketUserMessage userMessage)
+public static bool IsUserMessage(this IMessage message, out IUserMessage? userMessage)
 ```
 
 **Usage:**
 ```csharp
-public async Task HandleMessage(SocketMessage message)
+public async Task HandleMessage(IMessage message)
 {
     if (message.IsUserMessage(out var userMessage))
     {
-        // Now you have a strongly-typed SocketUserMessage
+        // Now you have a strongly-typed IUserMessage
         var hasAttachments = userMessage.Attachments.Count > 0;
         var mentionsEveryone = userMessage.MentionedEveryone;
     }
@@ -36,7 +36,7 @@ public async Task HandleMessage(SocketMessage message)
 Checks if a message is from a bot:
 
 ```csharp
-public static bool IsFromBot(this SocketMessage socketMessage)
+public static bool IsFromBot(this IMessage message)
 ```
 
 **Usage:**
@@ -47,14 +47,6 @@ if (message.IsFromBot())
 
 // Process user messages only
 await ProcessUserMessage(message);
-```
-
-### DiscordUserExtensions
-
-Provides utilities for working with Discord users:
-
-```csharp
-// Additional extensions can be added here as needed
 ```
 
 ## Building Discord Bot Plugins
@@ -76,8 +68,9 @@ public class DiscordBotPlugin : IPlugin
     {
         _logger = context.Logger;
         
-        // Subscribe to Discord message events
+        // Subscribe to Discord message events with named subscription
         context.EventRegistry?.SubscribeToMessage(
+            "message-handler",
             ShouldHandleMessage,
             HandleDiscordMessage);
     }
@@ -88,7 +81,7 @@ public class DiscordBotPlugin : IPlugin
         services.AddTransient<IDiscordMessageHandler, DiscordMessageHandler>();
     }
 
-    private bool ShouldHandleMessage(SocketMessage message)
+    private async Task<bool> ShouldHandleMessage(IMessage message)
     {
         // Don't handle bot messages
         if (message.IsFromBot())
@@ -99,10 +92,10 @@ public class DiscordBotPlugin : IPlugin
             return false;
             
         // Handle messages that start with command prefix
-        return userMessage.Content.StartsWith("!");
+        return await Task.FromResult(userMessage.Content.StartsWith("!"));
     }
 
-    private async Task HandleDiscordMessage(SocketMessage message)
+    private async Task HandleDiscordMessage(IMessage message)
     {
         if (!message.IsUserMessage(out var userMessage))
             return;
@@ -123,12 +116,12 @@ public class DiscordBotPlugin : IPlugin
         }
     }
 
-    private async Task HandleHelloCommand(SocketUserMessage message)
+    private async Task HandleHelloCommand(IUserMessage message)
     {
         await message.Channel.SendMessageAsync($"Hello {message.Author.Mention}! 👋");
     }
 
-    private async Task HandleInfoCommand(SocketUserMessage message)
+    private async Task HandleInfoCommand(IUserMessage message)
     {
         var embed = new EmbedBuilder()
             .WithTitle("Bot Information")
@@ -143,7 +136,7 @@ public class DiscordBotPlugin : IPlugin
         await message.Channel.SendMessageAsync(embed: embed);
     }
 
-    private async Task HandleUnknownCommand(SocketUserMessage message)
+    private async Task HandleUnknownCommand(IUserMessage message)
     {
         var availableCommands = new[] { "!hello", "!info" };
         var commandList = string.Join(", ", availableCommands);

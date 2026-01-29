@@ -4,8 +4,6 @@
   href: plugin-lifecycle.md
 - name: Dependency Injection
   href: dependency-injection.md
-- name: Settings Management
-  href: settings-management.md
 - name: Discord Integration
   href: discord-integration.md
 - name: API Reference

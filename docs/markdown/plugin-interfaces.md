@@ -151,10 +151,21 @@ Interface for registering event handlers within plugins.
 ```csharp
 public interface IPluginEventRegistry
 {
-    void SubscribeToMessage(Func<SocketMessage, bool> predicate, Func<SocketMessage, Task> handler);
-    Task DispatchMessageAsync(SocketMessage message);
+    void SubscribeToMessage(string name, Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler);
+    void UnsubscribeFromMessage(string name);
+    void ClearAllSubscriptions();
+    bool IsSubscribed(string name);
+    Dictionary<string, (Func<IMessage, Task<bool>> predicate, Func<IMessage, Task> handler)> GetSubscriptions();
 }
 ```
+
+#### Methods
+
+- **SubscribeToMessage**: Register a named event handler with an async predicate filter
+- **UnsubscribeFromMessage**: Remove a specific subscription by name
+- **ClearAllSubscriptions**: Remove all subscriptions from the calling plugin
+- **IsSubscribed**: Check if a subscription exists
+- **GetSubscriptions**: Get all subscriptions for the calling plugin
 
 #### Usage in Plugins
 
@@ -163,22 +174,57 @@ public void Initialize(PluginBootstrapContext context)
 {
     var eventRegistry = context.EventRegistry;
     
-    // Subscribe to specific message types
+    // Subscribe to specific message content
     eventRegistry?.SubscribeToMessage(
-        message => message.Content.StartsWith("!hello"),
+        "hello-handler",
         async message => {
+            // Async predicate - returns true if message should be handled
+            return message.Content.StartsWith("!hello");
+        },
+        async message => {
+            // Handle the message
             await message.Channel.SendMessageAsync("Hello there!");
         });
         
     // Subscribe to messages from specific channels
     eventRegistry?.SubscribeToMessage(
-        message => message.Channel.Name == "bot-commands",
+        "bot-commands-handler",
+        async message => {
+            return message.Channel.Name == "bot-commands";
+        },
         HandleBotCommand);
 }
 
-private async Task HandleBotCommand(SocketMessage message)
+private async Task HandleBotCommand(IMessage message)
 {
     // Handle the command
+}
+```
+
+#### Subscription Management
+
+```csharp
+public void Initialize(PluginBootstrapContext context)
+{
+    var eventRegistry = context.EventRegistry;
+    
+    // Register handlers
+    eventRegistry?.SubscribeToMessage(
+        "my-handler",
+        async msg => msg.Content.Contains("test"),
+        HandleTestMessage);
+    
+    // Check if subscribed
+    bool isSubscribed = eventRegistry?.IsSubscribed("my-handler") ?? false;
+    
+    // Get all subscriptions for debugging
+    var subs = eventRegistry?.GetSubscriptions();
+    
+    // Unsubscribe from a specific handler
+    eventRegistry?.UnsubscribeFromMessage("my-handler");
+    
+    // Clear all subscriptions from this plugin
+    eventRegistry?.ClearAllSubscriptions();
 }
 ```
 
